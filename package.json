@@ -1,0 +1,27 @@
+{
+  "name": "mcp-tp",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "main": "build/src/main.js",
+  "files": [ "build" ],
+  "scripts": {
+    "prebuild": "rimraf build dist",
+    "build": "tsc",
+    "postbuild": "shx chmod +x build/**/*.js",
+    "prestart": "npm run build",
+    "start": "node build/src/main.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^25.2.2",
+    "rimraf": "^6.1.2",
+    "typescript": "^5.9.3",
+    "zod": "^4.3.6"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0"
+  }
+}
