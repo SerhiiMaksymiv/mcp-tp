@@ -10,17 +10,30 @@ export class InteractiveCLI {
     this.model = new Ollama(client)
   }
 
+  private introMessage(): void {
+    console.log("=".repeat(70));
+    console.log(`
+      Welcome to the MCP + Ollama CLI (TypeScript - with Tool Calling)!
+      This CLI allows you to interact with the MCP + Ollama model.
+      To get started, please provide a question or command.
+
+      Info:
+        - model: ${this.model.name}
+        - baseUrl: ${this.model.url}
+    `);
+    console.log("=".repeat(70));
+  }
+
+  private exampleQueriesMessage(): void {
+    console.log(`
+      Example queries:
+        - write me test cases based on 145322 tp user story
+    `);
+  }
+
   async start(): Promise<void> {
-    console.log("=".repeat(70));
-    console.log("Advanced MCP + Ollama CLI (TypeScript - with Tool Calling)");
-    console.log("=".repeat(70));
-    console.log(`Model: ${this.model}`);
-    console.log("\nExample queries:");
-    console.log("  - What's the weather in Paris?");
-    console.log("  - Calculate 25 * 48");
-    console.log("  - Search for Python tutorials");
-    console.log("  - What time is it in Tokyo?");
-    console.log("  - List available tools\n");
+    this.introMessage();
+    this.exampleQueriesMessage();
 
     // Initialize MCP client
     await this.model.mcpClient.initialize()

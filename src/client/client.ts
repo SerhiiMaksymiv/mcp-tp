@@ -7,17 +7,21 @@ export class MCPClient extends Client {
 
   constructor() {
     super({
-      name: "mcp-ollama-client",
+      name: "mcp-tp-client",
       version: "1.0.0",
     })
   }
 
   async initialize() {
-    await this.connect(new StdioClientTransport({
-      command: "node",
-      args: ["build/src/server/server.js"]
-    }))
-    console.log('Connected to MCP Code Server');
+    try {
+      await this.connect(new StdioClientTransport({
+        command: "node",
+        args: ["build/src/server/init.js"]
+      }))
+      console.log('Connected to MCP Code Server');
+    } catch (error) {
+      console.error("Error connecting to MCP Code Server:", error);
+    }
   }
 
   async setTools() {

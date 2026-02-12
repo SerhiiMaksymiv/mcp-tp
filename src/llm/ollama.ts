@@ -1,5 +1,5 @@
-import { OllamaResponse, ToolDecision } from "../types.js";
-import { MCPClient } from "..//client/client.js";
+import { OllamaResponse, ToolDecision } from '../types/llm.ollama.js'
+import { MCPClient } from "../client/client.js";
 
 export class Ollama {
   private ollamaModel: string;
@@ -10,6 +10,14 @@ export class Ollama {
     this.client = client
     this.ollamaModel = ollamaModel;
     this.ollamaUrl = "http://localhost:11434/api/generate";
+  }
+
+  get name(): string {
+    return this.ollamaModel
+  }
+
+  get url(): string {
+    return this.ollamaUrl
   }
 
   get mcpClient(): MCPClient {
@@ -118,7 +126,8 @@ export class Ollama {
         return "";
       }
 
-      const data = (await response.json()) as OllamaResponse;
+      const resJson = await response.json()
+      const data = resJson as OllamaResponse;
       return data.response || "";
     } catch {
       return "";
@@ -126,29 +135,25 @@ export class Ollama {
   }
 
   async query(userInput: string): Promise<string> {
-    // Step 1: Determine if we need a tool
-    console.log("  🔍 Analyzing query...");
+    console.log("Analyzing query...");
     const toolDecision = await this.queryOllamaForToolSelection(userInput);
-
-    console.log('_toolDecision', toolDecision)
 
     const toolName = toolDecision.tool;
     const args = toolDecision.arguments;
 
     if (toolName && args) {
-      console.log(`  🔧 Using tool: ${toolName}`);
-      console.log(`     Arguments: ${JSON.stringify(args)}`);
+      console.log(`   Using tool: ${toolName}`);
+      console.log(`   Arguments: ${JSON.stringify(args)}`);
 
-      // Step 2: Call the tool via MCP
       const toolResult = await this.callTool(toolName, args);
-      console.log(`  📦 Tool result: ${JSON.stringify(toolResult)}`);
+      console.log(`  Tool result: ${JSON.stringify(toolResult)}`);
 
       // Step 3: Generate natural response
-      console.log("  💭 Generating response...");
-      return await this.generateFinalResponse(userInput, toolResult);
+      console.log("  Generating response...");
+      return this.generateFinalResponse(userInput, JSON.stringify(toolResult));
     } else {
       // No tool needed, just respond
-      console.log("  💬 No tool needed, responding directly...");
+      console.log("  No tool needed, responding directly...");
       const prompt = `User: ${userInput}\n\nAssistant:`;
 
       try {
