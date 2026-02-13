@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { TP } from "../tp/tp.js";
 import { z } from "zod";
 import { UserStory } from "../types/tp.user.story.js";
+import { JSDOM } from "jsdom";
 
 export class MCPServer extends McpServer {
   private tp: TP
@@ -25,7 +26,7 @@ export class MCPServer extends McpServer {
       'get_user_story',
       {
         title: 'Get TP user story content',
-        description: 'Gets tp user story content by specified TP card\'s ID',
+        description: 'Gets tp card (user story) content by specified id, e.g. 145789',
         inputSchema: {
           id: z.string()
             .length(6)
@@ -52,8 +53,11 @@ export class MCPServer extends McpServer {
           };
         }
 
+        const dom = new JSDOM(`<html><body><div id="content">${description}</div></body></html>`)
+        const descriptionText = dom.window.document.getElementById('content')?.textContent
+
         return {
-          content: [{ type: 'text', text: JSON.stringify(description) }],
+          content: [{ type: 'text', text: JSON.stringify(descriptionText) }],
         };
       }
     );

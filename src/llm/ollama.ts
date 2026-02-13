@@ -35,8 +35,6 @@ export class Ollama {
     const prompt = `You are a helpful assistant with access to these tools:
       ${JSON.stringify(toolsJson, null, 2)}
 
-      Based on the user's query, determine which tool to call (if any) and what arguments to pass.
-
       User query: ${userInput}
 
       Respond with ONLY a JSON object in this exact format:
@@ -80,10 +78,9 @@ export class Ollama {
         }
       }
 
-      console.log('error somewhere here')
       return { tool: null, arguments: null };
-    } catch {
-      console.log('catch error parsing json')
+    } catch (error: any) {
+      console.error('error in queryOllamaForToolSelection', error)
       return { tool: null, arguments: null };
     }
   }

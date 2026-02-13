@@ -15,7 +15,7 @@ export class TpClient {
     }
   }
 
-  params(params: TpClientParameters): string {
+  private params(params: TpClientParameters): string {
     let _url = this.baseUrl
     for (const [key, value] of Object.entries(params.pathParam)) {
       _url += `/${key}/${value}`
@@ -42,7 +42,7 @@ export class TpClient {
       }
       return (await response.json()) as T
     } catch (error) {
-      console.error("Error making NWS request:", error);
+      console.error("Error making TP request:", error);
       return null;
     }
   }
@@ -61,7 +61,7 @@ export class TpClient {
       }
       return (await response.json()) as T;
     } catch (error) {
-      console.error("Error making NWS request:", error);
+      console.error("Error making TP request:", error);
       return null;
     }
   }
