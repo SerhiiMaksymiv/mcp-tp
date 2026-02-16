@@ -115,7 +115,7 @@ export class Ollama {
     }
   }
 
-  private async generateFinalResponse(userInput: string, toolResult: ToolCallResponse[]): Promise<OllamaResponse | null> {
+  private async generateFinalResponse(toolResult: ToolCallResponse[]): Promise<OllamaResponse | null> {
     this.messages.push({
       role: "tool",
       content: toolResult.map((result) => result.text).join("\n"),
@@ -123,10 +123,6 @@ export class Ollama {
 
     const _tools = this.mcp.tools
     const ollamaTools = this.convertToolsToOllamaFormat(_tools);
-    this.messages.push({
-      role: "user",
-      content: userInput,
-    });
 
     let data: OllamaResponse | null = null;
 
@@ -171,7 +167,7 @@ export class Ollama {
 
       // Step 3: Generate natural response
       console.log("  Generating response...");
-      const finalResponse = await this.generateFinalResponse(userInput, toolResult);
+      const finalResponse = await this.generateFinalResponse(toolResult);
       return finalResponse?.message.content || "No final response";
     } else {
       // No tool needed, just respond
