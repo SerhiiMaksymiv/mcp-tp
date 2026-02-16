@@ -1,8 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { TP } from "../tp/tp.js";
 import { z } from "zod";
-import { UserStory } from "../types/tp.user.story.js";
 import { JSDOM } from "jsdom";
+
+import { TP } from "../tp/tp.js";
+import { UserStory } from "../types.js";
 
 export class MCPServer extends McpServer {
   private tp: TP
@@ -38,7 +39,10 @@ export class MCPServer extends McpServer {
 
         if (!userStory) {
           return {
-            content: [{ type: 'text', text: "Failed to get user story" }],
+            content: [{
+              type: 'text',
+              text: `Failed to get user story, id: ${id}\n JSON: ${JSON.stringify(userStory, null, 2)}`
+            }],
           }
         }
         const description = userStory.Description || '';
@@ -61,6 +65,29 @@ export class MCPServer extends McpServer {
         };
       }
     );
+
+    this.registerTool(
+      'add_comment',
+      {
+        title: 'Adds comment to TP user story',
+        description: 'Adds comment to tp card (user story) by specified id, e.g. 145789',
+        inputSchema: {
+          id: z.string()
+            .length(6)
+            .describe('TP (or tp) ID (e.g. 145789)'),
+          comment: z.string()
+            .describe('Comment to add'),
+        },
+      },
+      async ({ id, comment }) => {
+        const userStory = await this.tp.addComment<UserStory>(id, comment);
+        if (!userStory) return { content: [{ type: 'text', text: "Failed to get user story" }] };
+
+        return {
+          content: [{ type: 'text', text: JSON.stringify(userStory.Description) }],
+        };
+      }
+    )
   }
 }
 

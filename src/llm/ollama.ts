@@ -1,176 +1,182 @@
-import { OllamaResponse, ToolDecision } from '../types/llm.ollama.js'
-import { MCPClient } from "../client/client.js";
+import { OllamaResponse, Config, ToolFunction, ToolCallResponse } from "../types.js";
+import { MCPClient } from "../mcp/client.js";
+import { PromptMessage, Tool } from '@modelcontextprotocol/sdk/types.js';
 
 export class Ollama {
-  private ollamaModel: string;
-  private ollamaUrl: string;
-  private client: MCPClient
+  public mcp: MCPClient
+  private model: string
+  private url: string
+  private generateUrl: string
+  private chatUrl: string
+  private messages: any[] = [{
+    role: "system",
+    content: `You are a helpful assistant with access to tools. When the user asks about available tools or wants to list tools, provide a clear list of available tools with their descriptions.`
+  }]
 
-  constructor(client: MCPClient, ollamaModel: string = "my_qwen") {
-    this.client = client
-    this.ollamaModel = ollamaModel;
-    this.ollamaUrl = "http://localhost:11434/api/generate";
+  constructor(config: Config) {
+    this.mcp = new MCPClient()
+    this.model = config.llm.model
+    this.url = config.llm.url
+    this.generateUrl = this.url + "/api/generate"
+    this.chatUrl = this.url + "/api/chat"
   }
 
-  get name(): string {
-    return this.ollamaModel
+  async generate(prompt: string): Promise<OllamaResponse> {
+    const response = await fetch(this.generateUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: this.model,
+        prompt: prompt,
+        stream: false,
+        temperature: 0.3,
+        think: false
+      }),
+    });
+
+    const data = (await response.json()) as OllamaResponse;
+    return data;
   }
 
-  get url(): string {
-    return this.ollamaUrl
+  async chat(messages: PromptMessage[], tools: Tool[]): Promise<OllamaResponse> {
+    const response = await fetch(this.chatUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: this.model,
+        messages: messages,
+        stream: false,
+        temperature: 0.3,
+        think: false,
+        tools
+      }),
+    });
+
+    const data = (await response.json()) as OllamaResponse;
+    return data;
   }
 
-  get mcpClient(): MCPClient {
-    return this.client
-  }
-
-  private async queryOllamaForToolSelection(userInput: string): Promise<ToolDecision> {
-    const _tools = await this.client.listTools();
-    const toolsJson = _tools.tools.map((tool) => ({
-      name: tool.name,
-      description: tool.description,
-      parameters: tool.inputSchema,
+  private convertToolsToOllamaFormat(tools: Tool[]) {
+    return tools.map((tool) => ({
+      type: "function",
+      function: {
+        name: tool.name,
+        description: tool.description,
+        parameters: tool.inputSchema,
+      },
     }));
+  }
 
-    const prompt = `You are a helpful assistant with access to these tools:
-      ${JSON.stringify(toolsJson, null, 2)}
+  private async queryOllamaForToolSelection(userInput: string): Promise<OllamaResponse | null> {
+    const _tools = this.mcp.tools
+    const ollamaTools = this.convertToolsToOllamaFormat(_tools);
+    this.messages.push({
+      role: "user",
+      content: userInput,
+    });
 
-      User query: ${userInput}
-
-      Respond with ONLY a JSON object in this exact format:
-      {"tool": "tool_name", "arguments": {"param": "value"}}
-
-      If no tool is needed, respond with:
-      {"tool": null, "arguments": null}
-
-      JSON response:`
+    let data: OllamaResponse | null = null;
 
     try {
-      const response = await fetch(this.ollamaUrl, {
+      const response = await fetch(this.chatUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+
         body: JSON.stringify({
-          model: this.ollamaModel,
-          prompt: prompt,
+          model: this.model,
           stream: false,
           temperature: 0.3,
+          tools: ollamaTools,
+          messages: this.messages,
         }),
       });
 
-      if (!response.ok) {
-        return { tool: null, arguments: null };
-      }
-
-      const data = (await response.json()) as OllamaResponse;
-      const responseText = data.response || "{}";
-      console.log('_responseText', responseText)
-
-      // Extract JSON from response
-      const responseWithoutThink = responseText.split('</think>')[1].replace(/(\r\n|\n|\r)/gm, "")
-      if (responseWithoutThink) {
-        try {
-          return JSON.parse(responseWithoutThink);
-        } catch {
-          console.log('error parsing json')
-          return { tool: null, arguments: null };
-        }
-      }
-
-      return { tool: null, arguments: null };
-    } catch (error: any) {
-      console.error('error in queryOllamaForToolSelection', error)
-      return { tool: null, arguments: null };
-    }
-  }
-
-  private async callTool(toolName: string, args: Record<string, any>): Promise<any> {
-    try {
-      const result = await this.client.callTool({
-        name: toolName,
-        arguments: args,
-      });
-
-      if (result.content) {
-        return result.content || "No response from tool";
-      }
-      return "No response from tool";
+      data = (await response.json()) as OllamaResponse;
+      return data
     } catch (error) {
-      return `Error calling tool: ${error}`;
+      console.error("Error making Ollama request:", error);
+      console.error("Request URL:", this.chatUrl);
+      return null;
     }
   }
 
-  private async generateFinalResponse(userInput: string, toolResult: string): Promise<string> {
-    const prompt = `User asked: ${userInput}
-      Tool returned: ${toolResult}
-      Provide a helpful, natural response to the user based on this information. Keep it concise.`;
+  private async callTool(toolFunction: ToolFunction): Promise<ToolCallResponse[]> {
+    try {
+      const result = await this.mcp.callTool(toolFunction);
+      return result.content as ToolCallResponse[] || [{ type: "text", text: "No response from tool" }]
+    } catch (error) {
+      return [{ type: "error", text: `Error calling tool: ${error}` }]
+    }
+  }
+
+  private async generateFinalResponse(toolResult: ToolCallResponse[]): Promise<OllamaResponse | null> {
+    this.messages.push({
+      role: "tool",
+      content: toolResult.map((result) => result.text).join("\n"),
+    });
+
+    const _tools = this.mcp.tools
+    const ollamaTools = this.convertToolsToOllamaFormat(_tools);
+
+    let data: OllamaResponse | null = null;
 
     try {
-      const response = await fetch(this.ollamaUrl, {
+      const response = await fetch(this.chatUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+
         body: JSON.stringify({
-          model: this.ollamaModel,
-          prompt: prompt,
+          model: this.model,
           stream: false,
+          temperature: 0.3,
+          tools: ollamaTools,
+          messages: this.messages,
         }),
       });
 
-      if (!response.ok) {
-        return "";
-      }
-
-      const resJson = await response.json()
-      const data = resJson as OllamaResponse;
-      return data.response || "";
-    } catch {
-      return "";
+      data = (await response.json()) as OllamaResponse;
+      return data
+    } catch (error) {
+      console.error("Error making Ollama request:", error);
+      console.error("Request URL:", this.chatUrl);
+      return null;
     }
   }
 
   async query(userInput: string): Promise<string> {
     console.log("Analyzing query...");
     const toolDecision = await this.queryOllamaForToolSelection(userInput);
+    console.log(`   Using tool: ${JSON.stringify(toolDecision, null, 2)}`);
 
-    const toolName = toolDecision.tool;
-    const args = toolDecision.arguments;
+    const toolCalls = toolDecision?.message.tool_calls
 
-    if (toolName && args) {
-      console.log(`   Using tool: ${toolName}`);
-      console.log(`   Arguments: ${JSON.stringify(args)}`);
+    if (toolCalls && toolCalls.length > 0) {
+      console.log(`   Using tool: ${toolCalls[0].function.name}`);
+      console.log(`   Arguments: ${JSON.stringify(toolCalls[0].function.arguments)}`);
 
-      const toolResult = await this.callTool(toolName, args);
+      const toolResult = await this.callTool(toolCalls[0].function);
       console.log(`  Tool result: ${JSON.stringify(toolResult)}`);
 
       // Step 3: Generate natural response
       console.log("  Generating response...");
-      return this.generateFinalResponse(userInput, JSON.stringify(toolResult));
+      const finalResponse = await this.generateFinalResponse(toolResult);
+      return finalResponse?.message.content || "No final response";
     } else {
       // No tool needed, just respond
       console.log("  No tool needed, responding directly...");
       const prompt = `User: ${userInput}\n\nAssistant:`;
 
       try {
-        const response = await fetch(this.ollamaUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: this.ollamaModel,
-            prompt: prompt,
-            stream: false,
-          }),
-        });
-
-        if (response.ok) {
-          const data = (await response.json()) as OllamaResponse;
-          return data.response || "";
-        }
-        return "";
+        const response = await this.generate(prompt);
+        return response.message.content || "";
       } catch {
         return "";
       }

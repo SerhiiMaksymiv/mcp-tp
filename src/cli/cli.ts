@@ -1,13 +1,14 @@
 import readline from "readline";
 import { stdin as input, stdout as output } from 'node:process';
-import { MCPClient } from "../client/client.js";
+
 import { Ollama } from "../llm/ollama.js";
+import { Config } from "../types.js";
 
 export class InteractiveCLI {
-  private model: Ollama
+  private ollama: Ollama
 
-  constructor(client: MCPClient) {
-    this.model = new Ollama(client)
+  constructor(config: Config) {
+    this.ollama = new Ollama(config)
   }
 
   private introMessage(): void {
@@ -18,8 +19,7 @@ export class InteractiveCLI {
       To get started, please provide a question or command.
 
       Info:
-        - model: ${this.model.name}
-        - baseUrl: ${this.model.url}
+        - model: ${this.ollama}
     `);
     console.log("=".repeat(70));
   }
@@ -36,7 +36,7 @@ export class InteractiveCLI {
     this.exampleQueriesMessage();
 
     // Initialize MCP client
-    await this.model.mcpClient.initialize()
+    await this.ollama.mcp.initialize()
 
     // Create readline interface
     const rl = readline.createInterface({ input, output });
@@ -54,16 +54,16 @@ export class InteractiveCLI {
         if (["quit", "exit", "q"].includes(userInput.toLowerCase())) {
           console.log("\nGoodbye!");
           rl.close();
-          await this.model.mcpClient.close()
+          await this.ollama.mcp.close()
           process.exit(0);
         }
 
-        console.log(); // Blank line
+        console.log('\n'); // Blank line
         try {
-          const response = await this.model.query(userInput);
+          const response = await this.ollama.query(userInput);
           console.log(`\nAssistant: ${response}`);
         } catch (error) {
-          console.log(`\nError: ${error}`);
+          console.error(`\nError: ${error}`);
         }
 
         promptUser();
