@@ -109,6 +109,7 @@ export class Ollama {
   private async callTool(toolFunction: ToolFunction): Promise<ToolCallResponse[]> {
     try {
       const result = await this.mcp.callTool(toolFunction);
+      this.messages.push(result.message);
       return result.content as ToolCallResponse[] || [{ type: "text", text: "No response from tool" }]
     } catch (error) {
       return [{ type: "error", text: `Error calling tool: ${error}` }]
@@ -151,26 +152,51 @@ export class Ollama {
     }
   }
 
+  async runAgent(userInput: string): Promise<ToolCallResponse[]> {
+    while (true) {
+      const response = await this.queryOllamaForToolSelection(userInput);
+      console.log(`   Using tool: ${JSON.stringify(response, null, 2)}`);
+
+      const message = response?.message;
+      if (!message) {
+        return [{ type: "done", text: "No response from tool" }]
+      }
+
+      this.messages.push(message);
+
+      if (!message.tool_calls || message.tool_calls.length === 0) {
+        return [{ type: "done", text: message.content }];
+      }
+
+      for (const toolCall of message.tool_calls) {
+        const toolFunction = toolCall.function;
+        console.log(`   Using tool: ${toolFunction.name}`);
+        console.log(`   Arguments: ${JSON.stringify(toolFunction.arguments)}`);
+
+        const result = await this.callTool(toolFunction);
+        console.log(`  Tool result: ${JSON.stringify(result)}`);
+
+        this.messages.push({
+          role: "tool",
+          name: toolFunction.name,
+          tool_call_id: toolCall.id,
+          content: JSON.stringify(result)
+        });
+      }
+    }
+  }
+
   async query(userInput: string): Promise<string> {
     console.log("Analyzing query...");
-    const toolDecision = await this.queryOllamaForToolSelection(userInput);
-    console.log(`   Using tool: ${JSON.stringify(toolDecision, null, 2)}`);
+    const toolResult = await this.runAgent(userInput);
 
-    const toolCalls = toolDecision?.message.tool_calls
-
-    if (toolCalls && toolCalls.length > 0) {
-      console.log(`   Using tool: ${toolCalls[0].function.name}`);
-      console.log(`   Arguments: ${JSON.stringify(toolCalls[0].function.arguments)}`);
-
-      const toolResult = await this.callTool(toolCalls[0].function);
-      console.log(`  Tool result: ${JSON.stringify(toolResult)}`);
-
+    if (toolResult[0].type === "done") {
       // Step 3: Generate natural response
-      console.log("  Generating response...");
+      console.log("  Generating final response...");
       const finalResponse = await this.generateFinalResponse(toolResult);
+      console.log(`  Final response: ${JSON.stringify(finalResponse, null, 2)}`);
       return finalResponse?.message.content || "No final response";
     } else {
-      // No tool needed, just respond
       console.log("  No tool needed, responding directly...");
       const prompt = `User: ${userInput}\n\nAssistant:`;
 

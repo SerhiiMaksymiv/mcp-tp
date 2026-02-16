@@ -1,4 +1,4 @@
-import { UserStory } from "../types.js";
+import { UserStory, UserStoryComment } from "../types.js";
 import { config } from "../config.js";
 import { TpClient } from "../tp/client.js";
 
@@ -24,14 +24,24 @@ export class TP {
   }
 
   async addComment<T>(userStoryId: string, comment: string): Promise<T> {
-    return this.client.post<UserStory, string>({
+    const commentData = {
+      description: comment,
+      owner: {
+        id: config.tp.ownerId,
+      },
+      general: {
+        id: userStoryId,
+      },
+    }
+
+    return this.client.post<any, UserStoryComment>({
       pathParam: {
-        "userStories": userStoryId,
+        "comments": '',
       },
       param: {
         "format": "json",
       },
-    }, comment) as T
+    }, commentData) as T
   }
 
 }

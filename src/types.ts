@@ -7,6 +7,7 @@ export interface Config {
   tp: {
     url: string;
     token: string;
+    ownerId: string;
   }
 }
 
@@ -69,7 +70,36 @@ export interface ToolDecision {
 
 // TP
 export type TpClientParameters = {
-  pathParam: { [key: string]: string }, param: { [key: string]: string }
+  pathParam: { [key: string]: string | undefined }, param: { [key: string]: string }
+}
+
+export interface UserStoryComment {
+  ResourceType: string
+  Id: number
+  Description: string
+  ParentId: any
+  CreateDate: string
+  DescriptionModifyDate: string
+  IsPrivate: boolean
+  IsPinned: boolean
+  EntityVersion: number
+  General: General
+  Owner: Owner
+}
+
+export interface General {
+  ResourceType: string
+  Id: number
+  Name: string
+}
+
+export interface Owner {
+  ResourceType: string
+  Id: number
+  FirstName: string
+  LastName: string
+  Login: string
+  FullName: string
 }
 
 export interface UserStory {
