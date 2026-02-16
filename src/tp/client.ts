@@ -1,4 +1,4 @@
-import { TpClientParameters } from "../types/tp.client.js"
+import { TpClientParameters, Config } from "../types.js";
 
 export class TpClient {
 
@@ -6,9 +6,9 @@ export class TpClient {
   private token: string
   private headers: HeadersInit
 
-  constructor(tpConfig: { baseUrl: string, version?: string, token: string, }) {
-    this.baseUrl = tpConfig.baseUrl + (tpConfig.version || "v1")
-    this.token = tpConfig.token
+  constructor(config: Config) {
+    this.baseUrl = config.tp.url
+    this.token = config.tp.token
     this.headers = {
       "Content-Type": "application/json",
       Accept: "application/json",
@@ -32,6 +32,7 @@ export class TpClient {
   async get<T>(params: TpClientParameters): Promise<T | null> {
     params.param["access_token"] = this.token
     let _url = this.params(params)
+    console.log("Request URL:", _url);
     try {
       const response = await fetch(_url, {
         method: "GET",
@@ -40,9 +41,14 @@ export class TpClient {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      return (await response.json()) as T
+
+      const data = (await response.json()) as T
+      console.log("data:", JSON.stringify(data, null, 2));
+      return data
+      // return (await response.json()) as T
     } catch (error) {
       console.error("Error making TP request:", error);
+      console.error("Request URL:", _url);
       return null;
     }
   }

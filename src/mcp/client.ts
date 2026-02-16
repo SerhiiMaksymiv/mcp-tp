@@ -3,7 +3,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import { Tool } from "@modelcontextprotocol/sdk/types.js";
 
 export class MCPClient extends Client {
-  private tools: Tool[] = [];
+  public tools: Tool[] = []
 
   constructor() {
     super({
@@ -16,20 +16,14 @@ export class MCPClient extends Client {
     try {
       await this.connect(new StdioClientTransport({
         command: "node",
-        args: ["build/src/server/init.js"]
+        args: ["build/src/mcp/init.js"]
       }))
       console.log('Connected to MCP Code Server');
     } catch (error) {
       console.error("Error connecting to MCP Code Server:", error);
     }
-  }
 
-  async setTools() {
-    const toolsResponse = await this.listTools();
-    this.tools = toolsResponse.tools;
-  }
-
-  async getTools() {
-    return this.tools;
+    const response = await this.listTools();
+    this.tools = response.tools;
   }
 }

@@ -1,9 +1,8 @@
 import { InteractiveCLI } from "./cli/cli.js";
-import { MCPClient } from "./client/client.js";
+import { config } from "./config.js";
 
 async function main() {
-  const client = new MCPClient()
-  const cli = new InteractiveCLI(client)
+  const cli = new InteractiveCLI(config)
   await cli.start()
 }
 

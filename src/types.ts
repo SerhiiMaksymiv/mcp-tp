@@ -1,3 +1,77 @@
+// Config
+export interface Config {
+  llm: {
+    model: string;
+    url: string;
+  }
+  tp: {
+    url: string;
+    token: string;
+  }
+}
+
+
+// LLM
+export interface LLMProvider {
+  connect(): Promise<void>;
+  disconnect(): Promise<void>;
+  query(userInput: string): Promise<string>;
+}
+
+export interface OllamaResponse {
+  model: string
+  created_at: string
+  message: OllamaMessage
+  done: boolean
+  done_reason: string
+  total_duration: number
+  load_duration: number
+  prompt_eval_count: number
+  prompt_eval_duration: number
+  eval_count: number
+  eval_duration: number
+}
+
+export interface ToolCall {
+  id: string
+  function: ToolFunction
+}
+
+export interface ToolFunction {
+  index: number
+  name: string
+  arguments: Record<string, unknown>
+}
+
+export interface ToolCallResponse {
+  type: string
+  text: string
+}
+
+export interface OllamaMessage {
+  role: "system" | "user" | "assistant" | "tool"
+  content: string;
+  tool_calls?: ToolCall[]
+}
+
+export interface OllamaRequest {
+  model: string;
+  messages: OllamaMessage[];
+  stream: boolean;
+  tools?: any[];
+}
+
+export interface ToolDecision {
+  tool: string | null;
+  arguments: Record<string, any> | null;
+}
+
+
+// TP
+export type TpClientParameters = {
+  pathParam: { [key: string]: string }, param: { [key: string]: string }
+}
+
 export interface UserStory {
   ResourceType: string
   Id: number
