@@ -94,13 +94,6 @@ export class Ollama {
   private async callTool(toolFunction: ToolFunction): Promise<ToolCallResponse[]> {
     try {
       const result = await this.mcp.callTool(toolFunction)
-      const message = {
-        role: "tool",
-        content: result.content,
-      } as OllamaMessage;
-
-
-      this.messages.push(message);
       return result.content as ToolCallResponse[] || [{ type: "text", text: "No response from tool" }]
     } catch (error) {
       return [{ type: "error", text: `Error calling tool: ${error}` }]
