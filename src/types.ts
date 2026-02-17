@@ -62,6 +62,17 @@ export interface OllamaRequest {
   tools?: any[];
 }
 
+export interface OllamaToolRequest {
+  type: string
+  function: Function
+}
+
+export interface Function {
+  name: string
+  description?: string
+  parameters: Record<string, any>
+}
+
 export interface ToolDecision {
   tool: string | null;
   arguments: Record<string, any> | null;

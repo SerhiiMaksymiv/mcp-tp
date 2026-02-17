@@ -48,12 +48,10 @@ export class MCPServer extends McpServer {
         const description = userStory.Description || '';
         if (!description) {
           return {
-            content: [
-              {
-                type: "text",
-                text: `No description for ${id} tp card`,
-              },
-            ],
+            content: [{
+              type: "text",
+              text: `No description for ${id} tp card`,
+            }],
           };
         }
 
@@ -61,7 +59,10 @@ export class MCPServer extends McpServer {
         const descriptionText = dom.window.document.getElementById('content')?.textContent
 
         return {
-          content: [{ type: 'text', text: JSON.stringify(descriptionText) }],
+          content: [{
+            type: 'text',
+            text: JSON.stringify(descriptionText)
+          }],
         };
       }
     );
@@ -83,18 +84,18 @@ export class MCPServer extends McpServer {
         const addCommentResponse = await this.tp.addComment<UserStoryComment>(id, comment);
 
         if (!addCommentResponse) {
-          return { 
-            content: [{ 
-              type: 'text', 
+          return {
+            content: [{
+              type: 'text',
               text: `Failed to add comment to user story, id: ${id}\n JSON: ${JSON.stringify(addCommentResponse, null, 2)}`
-            }] 
+            }]
           };
         }
 
         return {
-          content: [{ 
+          content: [{
             type: 'text',
-            text: JSON.stringify(addCommentResponse) 
+            text: JSON.stringify(addCommentResponse)
           }],
         };
       }
