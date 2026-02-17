@@ -1,4 +1,4 @@
-import { OllamaResponse, Config, ToolFunction, ToolCallResponse, OllamaMessage, OllamaToolRequest } from "../types.js";
+import { OllamaResponse, Config, ToolFunction, ToolCallResponse, OllamaMessage } from "../types.js";
 import { MCPClient } from "../mcp/client.js";
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
 
@@ -21,6 +21,16 @@ export class Ollama {
     this.chatUrl = this.url + "/api/chat"
   }
 
+  async fetchWithTimeout(url: any, init = {} as any) {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 600000) // 10 minutes
+
+    return fetch(url, {
+      ...init,
+      signal: init.signal || controller.signal
+    }).finally(() => clearTimeout(timeoutId))
+  }
+
   async generate(prompt: string): Promise<OllamaResponse> {
     const response = await fetch(this.generateUrl, {
       method: "POST",
@@ -40,11 +50,11 @@ export class Ollama {
     return data;
   }
 
-  async chat(ollamaTools: OllamaToolRequest[]): Promise<OllamaResponse | null> {
+  async chat(ollamaTools: any): Promise<OllamaResponse | null> {
     let data: OllamaResponse | null = null;
 
     try {
-      const response = await fetch(this.chatUrl, {
+      const response = await this.fetchWithTimeout(this.chatUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -69,7 +79,7 @@ export class Ollama {
     }
   }
 
-  private convertToolsToOllamaFormat(tools: Tool[]): OllamaToolRequest[] {
+  private convertToolsToOllamaFormat(tools: Tool[]) {
     return tools.map((tool) => ({
       type: "function",
       function: {
