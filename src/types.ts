@@ -52,6 +52,8 @@ export interface ToolCallResponse {
 export interface OllamaMessage {
   role: "system" | "user" | "assistant" | "tool"
   content: string;
+  name?: string
+  tool_call_id?: string
   tool_calls?: ToolCall[]
 }
 

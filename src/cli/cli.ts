@@ -28,6 +28,7 @@ export class InteractiveCLI {
     console.log(`
       Example queries:
         - write me test cases based on 145322 tp user story
+        - write detailed test cases based on 145640 user story and add them as a comment
     `);
   }
 

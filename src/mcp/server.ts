@@ -71,7 +71,7 @@ export class MCPServer extends McpServer {
       'add_user_story_comment',
       {
         title: 'Adds provided content to TP user story as a comment',
-        description: 'Adds provided content as a comment to the specified tp card (user story) by specified id, e.g. 145789',
+        description: `Adds provided user story content as a comment to the specified tp card by id, e.g. 145789`,
         inputSchema: {
           id: z.string()
             .length(6)

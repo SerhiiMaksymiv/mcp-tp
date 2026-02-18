@@ -10,7 +10,10 @@ export class Ollama {
   private chatUrl: string
   private messages: OllamaMessage[] = [{
     role: "system",
-    content: `You are a helpful assistant with access to tools. When the user asks about available tools or wants to list tools, provide a clear list of available tools with their descriptions.`
+    content: `
+      You are a helpful assistant with access to tools.
+      When the user asks about available tools or wants to list tools, provide a clear list of available tools with their descriptions.
+    `
   }]
 
   constructor(config: Config) {
@@ -66,7 +69,7 @@ export class Ollama {
           temperature: 0.3,
           tools: ollamaTools,
           messages: this.messages,
-          thinking: false,
+          thinking: true,
         }),
       });
 
@@ -116,9 +119,10 @@ export class Ollama {
       content: toolResult.map((result) => result.text).join("\n"),
     }, {
       role: "system",
-      content: `Given user's original query and the responses you have provided:
-          If you think you have accomplished users query/task and/or have answered users original question - response with 'Done'.
-          Else suggest what can be done further to fulfill users query/task.
+      content: `
+        Given user's original query and the responses you have provided:
+        If you think you have accomplished users query/task and/or have answered users original question - response with 'Done'.
+        Else suggest what can be done further to fulfill users query/task.
         `,
     });
 
@@ -131,7 +135,7 @@ export class Ollama {
   async runAgent(userInput: string): Promise<ToolCallResponse[]> {
     while (true) {
       const response = await this.queryOllamaForToolSelection(userInput);
-      console.log(`   Using tool: ${JSON.stringify(response, null, 2)}`);
+      console.log(`   Query ollama tool: ${JSON.stringify(response, null, 2)}`);
 
       const message = response?.message;
       if (!message) {
@@ -154,7 +158,8 @@ export class Ollama {
 
         this.messages.push({
           role: "tool",
-          tool_calls: [toolCall],
+          name: toolFunction.name,
+          tool_call_id: toolCall.id,
           content: JSON.stringify(result)
         });
       }
