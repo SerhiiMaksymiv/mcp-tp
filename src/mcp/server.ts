@@ -68,10 +68,10 @@ export class MCPServer extends McpServer {
     );
 
     this.registerTool(
-      'add_user_story_comment',
+      'add_comment',
       {
-        title: 'Adds provided content to TP user story as a comment',
-        description: `Adds provided user story content as a comment to the specified tp card by id, e.g. 145789`,
+        title: 'Adds provided content to TP card (user story) as a comment',
+        description: `Adds provided content as a comment to the specified tp card by id, e.g. 145789`,
         inputSchema: {
           id: z.string()
             .length(6)
