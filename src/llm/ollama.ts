@@ -113,13 +113,16 @@ export class Ollama {
     }));
   }
 
-  private async queryOllamaForToolSelection(userInput: string): Promise<OllamaResponse | null> {
+  private async queryOllama(userInput?: string): Promise<OllamaResponse | null> {
     const _tools = this.mcp.tools
     const ollamaTools = this.convertToolsToOllamaFormat(_tools);
-    this.messages.push({
-      role: "user",
-      content: userInput,
-    });
+
+    if (userInput) {
+      this.messages.push({
+        role: "user",
+        content: userInput,
+      });
+    }
 
     return this.chat(ollamaTools)
   }
@@ -153,8 +156,18 @@ export class Ollama {
   }
 
   async runAgent(userInput: string): Promise<ToolCallResponse[]> {
+    const response = await this.queryOllama(userInput);
+    console.log(`   Analyze user input: ${JSON.stringify(response, null, 2)}`);
+
+    const message = response?.message;
+    if (!message) {
+      return [{ type: "done", text: "No response from tool" }]
+    }
+
+    this.messages.push(message);
+
     while (true) {
-      const response = await this.queryOllamaForToolSelection(userInput);
+      const response = await this.queryOllama();
       console.log(`   Query ollama tool: ${JSON.stringify(response, null, 2)}`);
 
       const message = response?.message;
@@ -163,7 +176,6 @@ export class Ollama {
       }
 
       this.messages.push(message);
-
       if (!message.tool_calls || message.tool_calls.length === 0) {
         return [{ type: "done", text: message.content }];
       }
