@@ -4,6 +4,7 @@ import { Tool } from '@modelcontextprotocol/sdk/types.js';
 
 export class Ollama {
   public mcp: MCPClient
+
   private model: string
   private url: string
   private generateUrl: string
@@ -156,18 +157,8 @@ export class Ollama {
   }
 
   async runAgent(userInput: string): Promise<ToolCallResponse[]> {
-    const response = await this.queryOllama(userInput);
-    console.log(`   Analyze user input: ${JSON.stringify(response, null, 2)}`);
-
-    const message = response?.message;
-    if (!message) {
-      return [{ type: "done", text: "No response from tool" }]
-    }
-
-    this.messages.push(message);
-
     while (true) {
-      const response = await this.queryOllama();
+      const response = await this.queryOllama(userInput);
       console.log(`   Query ollama tool: ${JSON.stringify(response, null, 2)}`);
 
       const message = response?.message;
@@ -176,6 +167,7 @@ export class Ollama {
       }
 
       this.messages.push(message);
+
       if (!message.tool_calls || message.tool_calls.length === 0) {
         return [{ type: "done", text: message.content }];
       }
@@ -195,6 +187,8 @@ export class Ollama {
           content: JSON.stringify(result)
         });
       }
+
+      userInput = ''
     }
   }
 

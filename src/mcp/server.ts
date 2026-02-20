@@ -27,7 +27,7 @@ export class MCPServer extends McpServer {
       'get_user_story',
       {
         title: 'Get TP user story content',
-        description: 'Gets tp card (user story) content by specified id, e.g. 145789',
+        description: 'Get tp card (user story) content by specified id, e.g. 145789',
         inputSchema: {
           id: z.string()
             .length(6)
