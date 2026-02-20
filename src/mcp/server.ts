@@ -3,7 +3,7 @@ import { z } from "zod";
 import { JSDOM } from "jsdom";
 
 import { TP } from "../tp/tp.js";
-import { UserStoryComment, UserStory } from "../types.js";
+import { UserStoryComment, UserStory, Bug } from "../types.js";
 
 export class MCPServer extends McpServer {
   private tp: TP
@@ -24,7 +24,7 @@ export class MCPServer extends McpServer {
 
   registerTools() {
     this.registerTool(
-      'get_user_story',
+      'get_user_story_content',
       {
         title: 'Get TP user story content',
         description: 'Get tp card (user story) content by specified id, e.g. 145789',
@@ -46,6 +46,50 @@ export class MCPServer extends McpServer {
           }
         }
         const description = userStory.Description || '';
+        if (!description) {
+          return {
+            content: [{
+              type: "text",
+              text: `No description for ${id} tp card`,
+            }],
+          };
+        }
+
+        const dom = new JSDOM(`<html><body><div id="content">${description}</div></body></html>`)
+        const descriptionText = dom.window.document.getElementById('content')?.textContent
+
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(descriptionText)
+          }],
+        };
+      }
+    );
+
+    this.registerTool(
+      'get_bug_content',
+      {
+        title: 'Get TP bug content',
+        description: 'Get tp card (bug) content by specified id, e.g. 145789',
+        inputSchema: {
+          id: z.string()
+            .length(6)
+            .describe('Bug card ID (e.g. 145789)')
+        },
+      },
+      async ({ id }) => {
+        const bug = await this.tp.getBug<Bug>(id)
+
+        if (!bug) {
+          return {
+            content: [{
+              type: 'text',
+              text: `Failed to get bug, id: ${id}\n JSON: ${JSON.stringify(bug, null, 2)}`
+            }],
+          }
+        }
+        const description = bug.Description || '';
         if (!description) {
           return {
             content: [{

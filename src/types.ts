@@ -11,7 +11,6 @@ export interface Config {
   }
 }
 
-
 // LLM
 export interface LLMProvider {
   connect(): Promise<void>;
@@ -106,15 +105,6 @@ export interface General {
   Name: string
 }
 
-export interface Owner {
-  ResourceType: string
-  Id: number
-  FirstName: string
-  LastName: string
-  Login: string
-  FullName: string
-}
-
 export interface UserStory {
   ResourceType: string
   Id: number
@@ -159,11 +149,64 @@ export interface UserStory {
   CustomFields: CustomField[]
 }
 
-export interface EntityType {
+export interface LastCommentedUser {
+  ResourceType: string
+  Id: number
+  FirstName: string
+  LastName: string
+  Login: string
+  FullName: string
+}
+
+export interface Release {
   ResourceType: string
   Id: number
   Name: string
-  IsUnitInHourOnly: boolean
+}
+
+export interface Bug {
+  ResourceType: string
+  Id: number
+  Name: string
+  Description: string
+  StartDate: any
+  EndDate: any
+  CreateDate: string
+  ModifyDate: string
+  LastCommentDate: any
+  Tags: string
+  NumericPriority: number
+  EntityVersion: number
+  EntityType: EntityType
+  LastEditor: LastEditor
+  Owner: Owner
+  Creator: Creator
+  LastCommentedUser: any
+  Project: Project
+  LinkedTestPlan: any
+  Milestone: any
+  Effort: number
+  EffortCompleted: number
+  EffortToDo: number
+  Progress: number
+  TimeSpent: number
+  TimeRemain: number
+  LastStateChangeDate: string
+  PlannedStartDate: any
+  PlannedEndDate: any
+  Units: string
+  Release: any
+  Iteration: any
+  TeamIteration: any
+  Team: Team
+  Priority: Priority
+  EntityState: EntityState
+  ResponsibleTeam: ResponsibleTeam
+  Build: any
+  UserStory: UserStory
+  Feature: Feature
+  Severity: Severity
+  CustomFields: CustomField[]
 }
 
 export interface LastEditor {
@@ -173,6 +216,79 @@ export interface LastEditor {
   LastName: string
   Login: string
   FullName: string
+}
+
+export interface Team {
+  ResourceType: string
+  Id: number
+  Name: string
+  EmojiIcon: string
+}
+
+export interface Priority {
+  ResourceType: string
+  Id: number
+  Name: string
+  Importance: number
+}
+
+export interface Severity {
+  ResourceType: string
+  Id: number
+  Name: string
+  Importance: number
+}
+
+export interface Feature {
+  ResourceType: string
+  Id: number
+  Name: string
+  Description: string
+  StartDate: any
+  EndDate: any
+  CreateDate: string
+  ModifyDate: string
+  LastCommentDate: any
+  Tags: string
+  NumericPriority: number
+  EntityVersion: number
+  EntityType: EntityType
+  LastEditor: LastEditor
+  Owner: Owner
+  Creator: Creator
+  LastCommentedUser: any
+  Project: Project
+  LinkedTestPlan: any
+  Milestone: any
+  Effort: number
+  EffortCompleted: number
+  EffortToDo: number
+  Progress: number
+  TimeSpent: number
+  TimeRemain: number
+  LastStateChangeDate: string
+  PlannedStartDate: any
+  PlannedEndDate: any
+  Units: string
+  Release: any
+  Iteration: any
+  TeamIteration: any
+  Team: Team
+  Priority: Priority
+  EntityState: EntityState
+  ResponsibleTeam: ResponsibleTeam
+  InitialEstimate: number
+  PortfolioEpic: PortfolioEpic
+  Epic: Epic
+  Build: any
+  CustomFields: CustomField[]
+}
+
+export interface EntityType {
+  ResourceType: string
+  Id: number
+  Name: string
+  IsUnitInHourOnly: boolean
 }
 
 export interface Owner {
@@ -193,15 +309,6 @@ export interface Creator {
   FullName: string
 }
 
-export interface LastCommentedUser {
-  ResourceType: string
-  Id: number
-  FirstName: string
-  LastName: string
-  Login: string
-  FullName: string
-}
-
 export interface Project {
   ResourceType: string
   Id: number
@@ -212,12 +319,6 @@ export interface Project {
 export interface Process {
   ResourceType: string
   Id: number
-}
-
-export interface Release {
-  ResourceType: string
-  Id: number
-  Name: string
 }
 
 export interface Team {
@@ -246,7 +347,13 @@ export interface ResponsibleTeam {
   Id: number
 }
 
-export interface Feature {
+export interface PortfolioEpic {
+  ResourceType: string
+  Id: number
+  Name: string
+}
+
+export interface Epic {
   ResourceType: string
   Id: number
   Name: string
@@ -257,3 +364,4 @@ export interface CustomField {
   Type: string
   Value: any
 }
+

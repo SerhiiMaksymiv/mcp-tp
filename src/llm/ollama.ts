@@ -114,17 +114,9 @@ export class Ollama {
     }));
   }
 
-  private async queryOllama(userInput?: string): Promise<OllamaResponse | null> {
+  private async queryOllama(): Promise<OllamaResponse | null> {
     const _tools = this.mcp.tools
     const ollamaTools = this.convertToolsToOllamaFormat(_tools);
-
-    if (userInput) {
-      this.messages.push({
-        role: "user",
-        content: userInput,
-      });
-    }
-
     return this.chat(ollamaTools)
   }
 
@@ -157,8 +149,13 @@ export class Ollama {
   }
 
   async runAgent(userInput: string): Promise<ToolCallResponse[]> {
+    this.messages.push({
+      role: "user",
+      content: userInput,
+    });
+
     while (true) {
-      const response = await this.queryOllama(userInput);
+      const response = await this.queryOllama();
       console.log(`   Query ollama tool: ${JSON.stringify(response, null, 2)}`);
 
       const message = response?.message;
