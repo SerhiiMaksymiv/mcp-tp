@@ -10,5 +10,7 @@ export const config: Config = {
     url: process.env.TP_BASE_URL || "https://elateral.tpondemand.com/api/v1",
     token: process.env.TP_TOKEN || "",
     ownerId: process.env.TP_OWNER_ID || "1504",
+    projectId: process.env.TP_PROJECT_ID || "59901",
+    teamId: process.env.TP_TEAM_ID || "127065",
   }
 }

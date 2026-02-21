@@ -8,6 +8,8 @@ export interface Config {
     url: string;
     token: string;
     ownerId: string;
+    projectId: string;
+    teamId: string;
   }
 }
 

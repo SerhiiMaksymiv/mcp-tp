@@ -32,6 +32,8 @@ export class InteractiveCLI {
 
         - write detailed test cases based on 145640 user story and add them as a comment
         - write detailed test cases based on 145642 user story, format them inside html <div> element and add them as a comment
+
+        - get 145637 user story and create a bug based on this story where Add Tile flyout (for a Static Tile) not show
     `);
   }
 
