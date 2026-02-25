@@ -145,7 +145,8 @@ export class Ollama {
     const _tools = this.mcp.tools
     const ollamaTools = this.convertToolsToOllamaFormat(_tools);
 
-    return this.chat(ollamaTools)
+    return await this.chat(ollamaTools)
+
   }
 
   async runAgent(userInput: string): Promise<ToolCallResponse[]> {
@@ -197,6 +198,8 @@ export class Ollama {
       // Step 3: Generate natural response
       console.log("  Generating final response...");
       const finalResponse = await this.generateFinalResponse(toolResult);
+      // reset messages
+      this.messages.splice(1)
       console.log(`  Final response: ${JSON.stringify(finalResponse, null, 2)}`);
       return finalResponse?.message.content || "No final response";
     } else {
