@@ -5,7 +5,7 @@ import { Tool } from '@modelcontextprotocol/sdk/types.js';
 export class Ollama {
   public mcp: MCPClient
 
-  private model: string
+  public model: string
   private url: string
   private generateUrl: string
   private chatUrl: string

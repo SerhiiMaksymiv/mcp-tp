@@ -19,7 +19,7 @@ export class InteractiveCLI {
       To get started, please provide a question or command.
 
       Info:
-        - model: ${this.ollama}
+        - model: ${this.ollama.model}
     `);
     console.log("=".repeat(70));
   }
@@ -34,6 +34,13 @@ export class InteractiveCLI {
         - write detailed test cases based on 145642 user story, format them inside html <div> element and add them as a comment
 
         - get 145637 user story and create a bug based on this story where Add Tile flyout (for a Static Tile) not show
+
+      Example commands:
+        - tp 145322 - shortcut for: 
+          write detailed test cases based on 145322 user story, format them inside html <div> element and add them as a comment
+
+        - bug 145322 - shortcut for: 
+          write detailed test cases based on 145322 bug content, format them inside html <div> element and add them as a comment
     `);
   }
 
@@ -62,6 +69,24 @@ export class InteractiveCLI {
           rl.close();
           await this.ollama.mcp.close()
           process.exit(0);
+        }
+
+        if (userInput.startsWith("tp") || userInput.startsWith("bug")) {
+          try {
+          const cardType = userInput.split(" ")[0];
+          const contentType = cardType === "tp" ? "user story" : "bug";
+
+          const tpId = userInput.replace(/^\D+/g, '')
+          const tpResponse = await this.ollama.query(`
+            write detailed test cases based on ${tpId} ${contentType} content, format them inside html <div> element and add them as a comment
+          `)
+          console.log(`\nAssistant: ${tpResponse}`);
+          } catch (error) {
+            console.error(`\nError: ${error}`);
+          }
+
+          promptUser();
+          return;
         }
 
         console.log('\n'); // Blank line
