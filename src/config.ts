@@ -7,7 +7,7 @@ export const config: Config = {
     url: process.env.OLLAMA_URL || "http://localhost:11434",
   },
   tp: {
-    url: process.env.TP_BASE_URL || "https://elateral.tpondemand.com/api/v1",
+    url: process.env.TP_BASE_URL || "https://www.ibm.com/docs/en/targetprocess",
     token: process.env.TP_TOKEN || "",
     ownerId: process.env.TP_OWNER_ID || "1504",
     projectId: process.env.TP_PROJECT_ID || "59901",
