@@ -18,7 +18,7 @@ export class TpClient {
   private params(params: TpClientParameters): string {
     let _url = this.baseUrl
     for (const [key, value] of Object.entries(params.pathParam)) {
-      _url += `/${key}/${value}`
+      _url += value ? `/${key}/${value}` : `/${key}`
     }
 
     let _urlParams = []
@@ -42,10 +42,7 @@ export class TpClient {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = (await response.json()) as T
-      console.log("data:", JSON.stringify(data, null, 2));
-      return data
-      // return (await response.json()) as T
+      return  (await response.json()) as T
     } catch (error) {
       console.error("Error making TP request:", error);
       console.error("Request URL:", _url);
@@ -53,7 +50,7 @@ export class TpClient {
     }
   }
 
-  async post<T, U>(params: TpClientParameters, data: U): Promise<T | null> {
+  async post<T, U>(params: TpClientParameters, data: T): Promise<U | null> {
     params.param["access_token"] = this.token
     let _url = this.params(params)
     try {
@@ -65,7 +62,7 @@ export class TpClient {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      return (await response.json()) as T;
+      return (await response.json()) as U
     } catch (error) {
       console.error("Error making TP request:", error);
       return null;

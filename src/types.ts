@@ -7,9 +7,11 @@ export interface Config {
   tp: {
     url: string;
     token: string;
+    ownerId: string;
+    projectId: string;
+    teamId: string;
   }
 }
-
 
 // LLM
 export interface LLMProvider {
@@ -51,6 +53,8 @@ export interface ToolCallResponse {
 export interface OllamaMessage {
   role: "system" | "user" | "assistant" | "tool"
   content: string;
+  name?: string
+  tool_call_id?: string
   tool_calls?: ToolCall[]
 }
 
@@ -61,6 +65,17 @@ export interface OllamaRequest {
   tools?: any[];
 }
 
+export interface OllamaToolRequest {
+  type: string
+  function: Function
+}
+
+export interface Function {
+  name: string
+  description?: string
+  parameters: Record<string, any>
+}
+
 export interface ToolDecision {
   tool: string | null;
   arguments: Record<string, any> | null;
@@ -69,7 +84,27 @@ export interface ToolDecision {
 
 // TP
 export type TpClientParameters = {
-  pathParam: { [key: string]: string }, param: { [key: string]: string }
+  pathParam: { [key: string]: string | undefined }, param: { [key: string]: string }
+}
+
+export interface UserStoryComment {
+  ResourceType: string
+  Id: number
+  Description: string
+  ParentId: any
+  CreateDate: string
+  DescriptionModifyDate: string
+  IsPrivate: boolean
+  IsPinned: boolean
+  EntityVersion: number
+  General: General
+  Owner: Owner
+}
+
+export interface General {
+  ResourceType: string
+  Id: number
+  Name: string
 }
 
 export interface UserStory {
@@ -116,11 +151,64 @@ export interface UserStory {
   CustomFields: CustomField[]
 }
 
-export interface EntityType {
+export interface LastCommentedUser {
+  ResourceType: string
+  Id: number
+  FirstName: string
+  LastName: string
+  Login: string
+  FullName: string
+}
+
+export interface Release {
   ResourceType: string
   Id: number
   Name: string
-  IsUnitInHourOnly: boolean
+}
+
+export interface Bug {
+  ResourceType: string
+  Id: number
+  Name: string
+  Description: string
+  StartDate: any
+  EndDate: any
+  CreateDate: string
+  ModifyDate: string
+  LastCommentDate: any
+  Tags: string
+  NumericPriority: number
+  EntityVersion: number
+  EntityType: EntityType
+  LastEditor: LastEditor
+  Owner: Owner
+  Creator: Creator
+  LastCommentedUser: any
+  Project: Project
+  LinkedTestPlan: any
+  Milestone: any
+  Effort: number
+  EffortCompleted: number
+  EffortToDo: number
+  Progress: number
+  TimeSpent: number
+  TimeRemain: number
+  LastStateChangeDate: string
+  PlannedStartDate: any
+  PlannedEndDate: any
+  Units: string
+  Release: any
+  Iteration: any
+  TeamIteration: any
+  Team: Team
+  Priority: Priority
+  EntityState: EntityState
+  ResponsibleTeam: ResponsibleTeam
+  Build: any
+  UserStory: UserStory
+  Feature: Feature
+  Severity: Severity
+  CustomFields: CustomField[]
 }
 
 export interface LastEditor {
@@ -130,6 +218,79 @@ export interface LastEditor {
   LastName: string
   Login: string
   FullName: string
+}
+
+export interface Team {
+  ResourceType: string
+  Id: number
+  Name: string
+  EmojiIcon: string
+}
+
+export interface Priority {
+  ResourceType: string
+  Id: number
+  Name: string
+  Importance: number
+}
+
+export interface Severity {
+  ResourceType: string
+  Id: number
+  Name: string
+  Importance: number
+}
+
+export interface Feature {
+  ResourceType: string
+  Id: number
+  Name: string
+  Description: string
+  StartDate: any
+  EndDate: any
+  CreateDate: string
+  ModifyDate: string
+  LastCommentDate: any
+  Tags: string
+  NumericPriority: number
+  EntityVersion: number
+  EntityType: EntityType
+  LastEditor: LastEditor
+  Owner: Owner
+  Creator: Creator
+  LastCommentedUser: any
+  Project: Project
+  LinkedTestPlan: any
+  Milestone: any
+  Effort: number
+  EffortCompleted: number
+  EffortToDo: number
+  Progress: number
+  TimeSpent: number
+  TimeRemain: number
+  LastStateChangeDate: string
+  PlannedStartDate: any
+  PlannedEndDate: any
+  Units: string
+  Release: any
+  Iteration: any
+  TeamIteration: any
+  Team: Team
+  Priority: Priority
+  EntityState: EntityState
+  ResponsibleTeam: ResponsibleTeam
+  InitialEstimate: number
+  PortfolioEpic: PortfolioEpic
+  Epic: Epic
+  Build: any
+  CustomFields: CustomField[]
+}
+
+export interface EntityType {
+  ResourceType: string
+  Id: number
+  Name: string
+  IsUnitInHourOnly: boolean
 }
 
 export interface Owner {
@@ -150,15 +311,6 @@ export interface Creator {
   FullName: string
 }
 
-export interface LastCommentedUser {
-  ResourceType: string
-  Id: number
-  FirstName: string
-  LastName: string
-  Login: string
-  FullName: string
-}
-
 export interface Project {
   ResourceType: string
   Id: number
@@ -169,12 +321,6 @@ export interface Project {
 export interface Process {
   ResourceType: string
   Id: number
-}
-
-export interface Release {
-  ResourceType: string
-  Id: number
-  Name: string
 }
 
 export interface Team {
@@ -203,7 +349,13 @@ export interface ResponsibleTeam {
   Id: number
 }
 
-export interface Feature {
+export interface PortfolioEpic {
+  ResourceType: string
+  Id: number
+  Name: string
+}
+
+export interface Epic {
   ResourceType: string
   Id: number
   Name: string
@@ -214,3 +366,4 @@ export interface CustomField {
   Type: string
   Value: any
 }
+

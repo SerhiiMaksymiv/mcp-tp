@@ -1,9 +1,11 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Tool } from "@modelcontextprotocol/sdk/types.js";
 
 export class MCPClient extends Client {
   public tools: Tool[] = []
+  public servers: Map<string, McpServer> = new Map()
 
   constructor() {
     super({
